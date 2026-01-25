@@ -1,5 +1,6 @@
 package com.pascal.model.response
 
+
 data class UserProfile(
     var userId: String,
     val image: String?,

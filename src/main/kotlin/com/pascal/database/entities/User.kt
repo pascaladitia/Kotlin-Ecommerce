@@ -1,18 +1,18 @@
 package com.pascal.database.entities
 
-import com.pascal.contans.UserType
+import com.pascal.constants.UserType
 import com.pascal.database.entities.base.BaseEntity
 import com.pascal.database.entities.base.BaseEntityClass
 import com.pascal.database.entities.base.BaseIdTable
 import com.pascal.feature.auth.JwtConfig
 import com.pascal.model.request.JwtTokenRequest
-import com.pascal.utils.RoleHierarchy
 import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.javatime.datetime
 import java.time.LocalDateTime
 
 object UserTable : BaseIdTable("user") {
-    val email = varchar("email", 255)
+    val email = varchar("email", 255) // Nullable for mobile users
     val userType = enumerationByName<UserType>("user_type", 100)
     val password = varchar("password", 200)
     val otpCode = varchar("otp_code", 6)
@@ -29,7 +29,7 @@ object UserTable : BaseIdTable("user") {
 
 class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     companion object : BaseEntityClass<UserDAO>(UserTable, UserDAO::class.java)
-    
+
     var email by UserTable.email
     var userType by UserTable.userType
     var password by UserTable.password
@@ -38,6 +38,9 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
     var isVerified by UserTable.isVerified
     var isActive by UserTable.isActive
 
+    /**
+     * Get the user response with role-based information
+     */
     fun response() = UserResponse(
         id.value,
         email,
@@ -48,21 +51,57 @@ class UserDAO(id: EntityID<String>) : BaseEntity(id, UserTable) {
         updatedAt
     )
 
-    fun loggedInWIthToken() = LoginResponse(
+    /**
+     * Get the seller information if the user is a seller
+     */
+    fun getSellerInfo(): SellerResponse? {
+        if (userType != UserType.SELLER) return null
+        val seller = SellerDAO.find { SellerTable.userId eq id }.singleOrNull()
+        return seller?.response()
+    }
+
+    /**
+     * Generate login response with JWT token
+     */
+    fun loggedInWithToken() = LoginResponse(
         response(), JwtConfig.tokenProvider(JwtTokenRequest(id.value, email, userType.name))
     )
 
+    /**
+     * Check if the user has a specific role
+     */
     fun hasRole(role: UserType): Boolean = this.userType == role
 
-    fun hasAccessTo(role: UserType): Boolean = RoleHierarchy.hasAccess(this.userType, role)
+    /**
+     * Check if the user has access to a specific role (with hierarchy)
+     */
+    fun hasAccessTo(role: UserType): Boolean = com.pascal.utils.RoleHierarchy.hasAccess(this.userType, role)
 
+    /**
+     * Check if user is active and verified
+     */
     fun isActiveAndVerified(): Boolean = isVerified && isActive
 
+    /**
+     * Check if user is Super Admin
+     */
     fun isSuperAdmin(): Boolean = userType == UserType.SUPER_ADMIN
 
+    /**
+     * Check if user is Admin
+     */
     fun isAdmin(): Boolean = userType == UserType.ADMIN || userType == UserType.SUPER_ADMIN
 
-    fun isCustomer(): Boolean = userType == UserType.CUSTOMER || userType == UserType.ADMIN || userType == UserType.SUPER_ADMIN
+    /**
+     * Check if user is Seller
+     */
+    fun isSeller(): Boolean = userType == UserType.SELLER
+
+    /**
+     * Check if user is Customer
+     */
+    fun isCustomer(): Boolean = userType == UserType.CUSTOMER || userType == UserType.SELLER ||
+                                userType == UserType.ADMIN || userType == UserType.SUPER_ADMIN
 }
 
 data class UserResponse(

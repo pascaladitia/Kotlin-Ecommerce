@@ -17,17 +17,17 @@ object UserProfileTable : BaseIdTable("user_profile") {
     val faxNumber = text("fax_number").nullable()
     val streetAddress = text("street_address").nullable()
     val city = text("city").nullable()
-    val state = text("state").nullable()
-    val country = text("country").nullable()
+    val state = text("state").nullable() // Added state field
+    val country = text("country").nullable() // Added country field
     val identificationType = text("identification_type").nullable()
     val identificationNo = text("identification_no").nullable()
     val occupation = text("occupation").nullable()
     val postCode = text("post_code").nullable()
     val gender = text("gender").nullable()
-    val dateOfBirth = date("date_of_birth").nullable()
-    val bio = text("bio").nullable()
-    val isActive = bool("is_active").default(true)
-    val verified = bool("verified").default(false)
+    val dateOfBirth = date("date_of_birth").nullable() // Added date of birth
+    val bio = text("bio").nullable() // Added bio for user description
+    val isActive = bool("is_active").default(true) // Whether the profile is active
+    val verified = bool("verified").default(false) // Whether the profile is verified
     // createdAt and updatedAt are inherited from BaseIdTable
 }
 

@@ -1,7 +1,7 @@
 package com.pascal.utils
 
-import com.pascal.contans.AppConstants
-import com.pascal.contans.Message
+import com.pascal.constants.AppConstants
+import com.pascal.constants.Message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

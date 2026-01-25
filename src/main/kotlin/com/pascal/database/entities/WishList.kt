@@ -1,0 +1,22 @@
+package com.pascal.database.entities
+
+import com.pascal.database.entities.base.BaseEntity
+import com.pascal.database.entities.base.BaseEntityClass
+import com.pascal.database.entities.base.BaseIdTable
+import com.pascal.model.response.Product
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+
+object WishListTable : BaseIdTable("wishlist") {
+    val userId = reference("user_id", UserTable.id)
+    val productId = reference("product_id", ProductTable.id)
+}
+
+class WishListDAO(id: EntityID<String>) : BaseEntity(id, WishListTable) {
+    companion object : BaseEntityClass<WishListDAO>(WishListTable,WishListDAO::class.java)
+
+    var userId by WishListTable.userId
+    var productId by WishListTable.productId
+    fun response(product: Product? = null) = WishList(product)
+}
+
+data class WishList(val product: Product? = null)

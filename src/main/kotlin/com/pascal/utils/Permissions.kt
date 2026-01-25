@@ -1,6 +1,6 @@
 package com.pascal.utils
 
-import com.pascal.contans.UserType
+import com.pascal.constants.UserType
 import com.pascal.model.request.JwtTokenRequest
 
 /**
@@ -26,6 +26,13 @@ object Permissions {
             Permission.MANAGE_SHOPS,
             Permission.VIEW_REPORTS,
             Permission.MANAGE_REVIEWS
+        ),
+        UserType.SELLER to setOf(
+            Permission.MANAGE_OWN_PRODUCTS,
+            Permission.MANAGE_OWN_SHOP,
+            Permission.MANAGE_OWN_ORDERS,
+            Permission.VIEW_OWN_REPORTS,
+            Permission.MANAGE_OWN_REVIEWS
         ),
         UserType.CUSTOMER to setOf(
             Permission.CREATE_ORDERS,

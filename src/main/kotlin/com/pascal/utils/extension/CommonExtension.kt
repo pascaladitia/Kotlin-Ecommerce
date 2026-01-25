@@ -1,11 +1,10 @@
 package com.pascal.utils.extension
 
-import com.pascal.contans.UserType
+import com.pascal.constants.UserType
 import com.pascal.model.request.JwtTokenRequest
 import com.pascal.utils.ApiResponse
 import com.pascal.utils.CommonException
 import com.pascal.utils.Permission
-import com.pascal.utils.Permissions
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -87,7 +86,7 @@ suspend fun ApplicationCall.requireRole(role: UserType, useHierarchy: Boolean = 
  */
 fun ApplicationCall.hasPermission(permission: Permission): Boolean {
     val user = this.principal<JwtTokenRequest>()
-    return Permissions.hasPermission(user, permission)
+    return com.pascal.utils.Permissions.hasPermission(user, permission)
 }
 
 /**

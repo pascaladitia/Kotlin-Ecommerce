@@ -1,6 +1,6 @@
 package com.pascal.plugin
 
-import com.pascal.contans.UserType
+import com.pascal.constants.UserType
 import com.pascal.feature.auth.JwtConfig
 import com.pascal.model.request.JwtTokenRequest
 import com.pascal.utils.RoleHierarchy
@@ -10,8 +10,16 @@ import io.ktor.server.auth.jwt.*
 
 fun Application.configureAuth() {
     install(Authentication) {
+        /**
+         * Setup the JWT authentication to be used in [Routing].
+         * If the token is valid, the corresponding [User] is fetched from the database.
+         * The [User] can then be accessed in each [ApplicationCall].
+         */
         jwt (RoleManagement.CUSTOMER.role) {
             provideJwtAuthConfig(this, RoleManagement.CUSTOMER)
+        }
+        jwt(RoleManagement.SELLER.role) {
+            provideJwtAuthConfig(this, RoleManagement.SELLER)
         }
         jwt(RoleManagement.ADMIN.role) {
             provideJwtAuthConfig(this, RoleManagement.ADMIN)
@@ -46,12 +54,14 @@ fun provideJwtAuthConfig(jwtConfig: JWTAuthenticationProvider.Config, userRole: 
 enum class RoleManagement(val role: String) {
     SUPER_ADMIN("super_admin"),
     ADMIN("admin"),
+    SELLER("seller"),
     CUSTOMER("customer");
 
     val userType: UserType
         get() = when (this) {
             SUPER_ADMIN -> UserType.SUPER_ADMIN
             ADMIN -> UserType.ADMIN
+            SELLER -> UserType.SELLER
             CUSTOMER -> UserType.CUSTOMER
         }
 
@@ -59,11 +69,13 @@ enum class RoleManagement(val role: String) {
         fun fromUserType(userType: UserType): RoleManagement = when (userType) {
             UserType.SUPER_ADMIN -> SUPER_ADMIN
             UserType.ADMIN -> ADMIN
+            UserType.SELLER -> SELLER
             UserType.CUSTOMER -> CUSTOMER
         }
 
         // Role hierarchy helpers
         val adminRoles = setOf(SUPER_ADMIN, ADMIN)
-        val customerRoles = setOf(SUPER_ADMIN, ADMIN, CUSTOMER)
+        val sellerRoles = setOf(SUPER_ADMIN, ADMIN, SELLER)
+        val customerRoles = setOf(SUPER_ADMIN, ADMIN, SELLER, CUSTOMER)
     }
 }

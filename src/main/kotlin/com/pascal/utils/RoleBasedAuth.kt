@@ -1,8 +1,7 @@
 package com.pascal.utils
 
-import com.pascal.contans.UserType
+import com.pascal.constants.UserType
 import com.pascal.model.request.JwtTokenRequest
-import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
@@ -13,8 +12,9 @@ import io.ktor.server.response.*
 object RoleHierarchy {
     // Define role hierarchy where higher roles can access lower role resources
     val roleHierarchy = mapOf(
-        UserType.SUPER_ADMIN to setOf(UserType.SUPER_ADMIN, UserType.ADMIN, UserType.CUSTOMER),
-        UserType.ADMIN to setOf(UserType.ADMIN, UserType.CUSTOMER),
+        UserType.SUPER_ADMIN to setOf(UserType.SUPER_ADMIN, UserType.ADMIN, UserType.SELLER, UserType.CUSTOMER),
+        UserType.ADMIN to setOf(UserType.ADMIN, UserType.SELLER, UserType.CUSTOMER),
+        UserType.SELLER to setOf(UserType.SELLER, UserType.CUSTOMER),
         UserType.CUSTOMER to setOf(UserType.CUSTOMER)
     )
 
@@ -39,6 +39,7 @@ object RoleHierarchy {
         return when (currentUserType) {
             UserType.SUPER_ADMIN -> true  // Super admin can manage all users
             UserType.ADMIN -> targetUserType != UserType.SUPER_ADMIN && targetUserType != UserType.ADMIN
+            UserType.SELLER -> targetUserType == UserType.CUSTOMER
             UserType.CUSTOMER -> targetUserType == UserType.CUSTOMER
         }
     }
@@ -51,7 +52,7 @@ object RoleHierarchy {
 suspend fun ApplicationCall.requireRole(role: UserType) {
     val jwtPrincipal = this.principal<JwtTokenRequest>()
     if (jwtPrincipal == null || !jwtPrincipal.hasAccessTo(role)) {
-        this.respond(HttpStatusCode.Forbidden, "Access denied")
+        this.respond(io.ktor.http.HttpStatusCode.Forbidden, "Access denied")
         return
     }
 }
@@ -62,7 +63,7 @@ suspend fun ApplicationCall.requireRole(role: UserType) {
 suspend fun ApplicationCall.requireSpecificRole(role: UserType) {
     val jwtPrincipal = this.principal<JwtTokenRequest>()
     if (jwtPrincipal == null || !jwtPrincipal.hasRole(role)) {
-        this.respond(HttpStatusCode.Forbidden, "Access denied")
+        this.respond(io.ktor.http.HttpStatusCode.Forbidden, "Access denied")
         return
     }
 }
@@ -82,10 +83,14 @@ object RoleBasedAuth {
         return userTypeEnum == UserType.ADMIN || userTypeEnum == UserType.SUPER_ADMIN
     }
 
+    fun isSeller(userType: String): Boolean {
+        return UserType.fromString(userType) == UserType.SELLER
+    }
+
     fun isCustomer(userType: String): Boolean {
         val userTypeEnum = UserType.fromString(userType)
-        return userTypeEnum == UserType.CUSTOMER || userTypeEnum == UserType.ADMIN ||
-                userTypeEnum == UserType.SUPER_ADMIN
+        return userTypeEnum == UserType.CUSTOMER || userTypeEnum == UserType.SELLER ||
+               userTypeEnum == UserType.ADMIN || userTypeEnum == UserType.SUPER_ADMIN
     }
 
     fun canManageUsers(currentRole: String, targetRole: String): Boolean {

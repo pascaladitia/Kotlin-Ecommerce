@@ -1,7 +1,7 @@
 package com.pascal
 
 import com.pascal.config.DotEnvConfig
-import com.pascal.database.configureDatabase
+import com.pascal.database.configureDataBase
 import com.pascal.feature.auth.JwtConfig
 import com.pascal.plugin.*
 import io.ktor.server.application.*
@@ -18,7 +18,7 @@ fun main() {
 }
 
 fun Application.configureAll() {
-    configureDatabase()
+    configureDataBase()
     configureBasic()
     configureKoin()
     configureRequestValidation()

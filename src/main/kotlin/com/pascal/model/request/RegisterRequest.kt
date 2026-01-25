@@ -13,7 +13,7 @@ data class RegisterRequest(val email: String, val password: String, val userType
             validate(RegisterRequest::email).isNotNull().isEmail()
             validate(RegisterRequest::password).isNotNull().hasSize(4, 15)
             validate(RegisterRequest::userType).isNotNull()
-                .isIn(RoleManagement.ADMIN.role, RoleManagement.CUSTOMER.role)
+                .isIn(RoleManagement.ADMIN.role, RoleManagement.CUSTOMER.role, RoleManagement.SELLER.role)
         }
     }
 }

@@ -1,0 +1,45 @@
+package com.pascal.database.entities
+
+import com.pascal.database.entities.base.BaseEntity
+import com.pascal.database.entities.base.BaseEntityClass
+import com.pascal.database.entities.base.BaseIdTable
+import com.pascal.model.response.UserPolicyConsent
+import org.jetbrains.exposed.v1.core.dao.id.EntityID
+import org.jetbrains.exposed.v1.javatime.datetime
+import java.time.LocalDateTime
+
+
+/**
+ * Table for tracking user consent to various policies
+ */
+object PolicyConsentTable : BaseIdTable("policy_consents") {
+    val userId = reference("user_id", UserTable)
+    val policyId = reference("policy_id", PolicyDocumentTable)
+    val consentDate = datetime("consent_date").nullable()
+    val ipAddress = varchar("ip_address", 50).nullable()
+    val userAgent = varchar("user_agent", 255).nullable()
+
+    override val primaryKey = PrimaryKey(id)
+}
+
+/**
+ * Data Access Object for user policy consents
+ */
+class PolicyConsentDAO(id: EntityID<String>) : BaseEntity(id, PolicyConsentTable) {
+    companion object : BaseEntityClass<PolicyConsentDAO>(PolicyConsentTable, PolicyConsentDAO::class.java)
+
+    var userId by PolicyConsentTable.userId
+    var policyId by PolicyDocumentDAO referencedOn PolicyConsentTable.policyId
+    var consentDate by PolicyConsentTable.consentDate
+    var ipAddress by PolicyConsentTable.ipAddress
+    var userAgent by PolicyConsentTable.userAgent
+
+    fun response() = UserPolicyConsent(
+        id.value,
+        userId.value,
+        policyId.id.value,
+        consentDate?.toString() ?: LocalDateTime.now().toString(),  // Convert LocalDateTime to string for response
+        ipAddress,
+        userAgent
+    )
+}
